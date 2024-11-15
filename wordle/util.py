@@ -1,4 +1,5 @@
 from colorama import Fore, Style
+import os
 
 # Info should be a list[int] of where 0 <= int <= 2
 # 0 is for WHITE | Not in word
@@ -63,11 +64,33 @@ def hard_most_consistent(word: str, guess: str, previous_guess: str) -> bool:
         elif value == 1: ignore.append(i)
     
     # Remove Letters that have already been checked for correct place
-    guess = [(c if i not in ignore else '_') for i, c in enumerate(guess)]
+    guess_list: list[str] = [(c if i not in ignore else '_') for i, c in enumerate(guess)]
     
     # Check letters that are in word but not correct place
     for i, value in enumerate(previous_info):
-        if value == 2 and previous_guess[i] not in guess: return False
+        if value == 2 and previous_guess[i] not in guess_list: return False
         
     # Return True if all other checks pass
     return True
+
+# Read a file into a list of the lines
+def read_file(file_name: str) -> list[str]:
+    '''Returns list[str] of lines of given {file_name}'''
+    with open(file_name, 'r') as file:
+        return file.read().strip().split()
+
+# Checks validity of guess
+def valid_guess(word: str, guess: str, words: list[str], available: list[str]) -> bool:
+    # Make sure capitalization is consistent
+    word, guess = word.lower(), guess.lower()
+    
+    if len(guess) != len(word) or guess not in words + available: return False
+    return True
+
+# Prints history of guesses
+def print_history(history: list[tuple[str, list[int]]]) -> None:
+    for word, info in history:
+        print(pretty_word(word, info))
+        
+def clear_screen() -> None:
+    os.system('clear')
