@@ -1,11 +1,11 @@
-from wordle.util import pretty_word, get_info, read_file, valid_guess, print_history, clear_screen
+from wordle.util import pretty_word, get_info, read_file, valid_guess, print_history, clear_screen, hard_most_consistent
 from random import choice
 
 class Wordle:
-    def __init__(self, hard_mode: bool = False) -> None:
+    def __init__(self) -> None:
         pass
     
-    def play(self) -> bool:
+    def play(self, hard_mode: bool = False) -> bool:
         words: list[str] = read_file('wordle/words/words.txt')
         available: list[str] = read_file('wordle/words/available.txt')
         
@@ -13,16 +13,17 @@ class Wordle:
         word: str = choice(words)
         history: list[tuple[str, list[int]]] = []
         
+        previous: str | None = None
         while guesses > 0:
-            guess = None
+            guess: str | None = None
             while not guess:
                 clear_screen()
                 print('---------------')
                 print_history(history)
-                i = input('')
-                if valid_guess(word, i, words, available):
+                i = input('Your Guess: ')
+                if valid_guess(word, i, words, available) and ((hard_mode and hard_most_consistent(word, i, previous)) or not hard_mode):
                     guess = i
-                    
+                    previous = i
             history.append((guess, get_info(word, guess)))
             
             if guess.lower() == word.lower():
@@ -35,6 +36,5 @@ class Wordle:
         print('---------------')
         print_history(history)
         print('---------------')
-        
             
         return True if guesses > 0 else False

@@ -45,32 +45,35 @@ def get_info(word: str, guess: str) -> list[int]:
             
     return info
 
-# Makes sure that guess and previous guess are valid for hard mode
-# Hard mode is when you know that a letter is in the correct place you 
-# must use that letter in the same place again or if you know that
-# a letter is in the word that letter must be used again anywhere in the word
-def hard_most_consistent(word: str, guess: str, previous_guess: str) -> bool:
+def hard_most_consistent(word: str, guess: str, previous_guess: str | None) -> bool:
     '''Returns True if guess is in accordance with hard mode else False'''
-    # Ensure Consistent Casing
+    # Return True if there is no previous guess
+    if not previous_guess: 
+        return True
+
+    # Ensure consistent casing
     word, guess, previous_guess = word.lower(), guess.lower(), previous_guess.lower()
-    
-    # Get Info for Previous Guess
+
+    # Get info for previous guess
     previous_info: list[int] = get_info(word, previous_guess)
-    
-    # Check letters that are already in correct place
-    ignore: list[int] = []
+
+    # Check letters in the correct place
+    leftover: list[str] = []
     for i, value in enumerate(previous_info):
-        if value == 1 and guess[i] != previous_guess[i]: return False
-        elif value == 1: ignore.append(i)
-    
-    # Remove Letters that have already been checked for correct place
-    guess_list: list[str] = [(c if i not in ignore else '_') for i, c in enumerate(guess)]
-    
-    # Check letters that are in word but not correct place
+        if value == 1:  # Letter is in the correct position
+            if guess[i] != previous_guess[i]:  # Must use the same letter in the same position
+                return False
+        elif value == 2:
+            leftover.append(previous_guess[i])
+            
+    # Check for letters in word but not correct place
     for i, value in enumerate(previous_info):
-        if value == 2 and previous_guess[i] not in guess_list: return False
-        
-    # Return True if all other checks pass
+        if value != 1 and guess[i] in leftover:
+            leftover.remove(guess[i])
+    
+    if len(leftover) != 0: return False
+
+    # All checks passed
     return True
 
 # Read a file into a list of the lines
